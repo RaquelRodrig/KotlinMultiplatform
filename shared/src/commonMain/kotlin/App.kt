@@ -1,41 +1,42 @@
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.Button
+package auction
+
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.*
+import auction.ui.AuctionItemList
+import auction.ui.AuctionItemDetail
 
-@OptIn(ExperimentalResourceApi::class)
 @Composable
-fun App() {
+fun App(apiKey: String) {
     MaterialTheme {
-        var greetingText by remember { mutableStateOf("Hello, World!") }
-        var showImage by remember { mutableStateOf(false) }
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = {
-                greetingText = "Hello, ${getPlatformName()}"
-                showImage = !showImage
-            }) {
-                Text(greetingText)
-            }
-            AnimatedVisibility(showImage) {
-                Image(
-                    painterResource("compose-multiplatform.xml"),
-                    contentDescription = "Compose Multiplatform icon"
-                )
+        Surface(modifier = Modifier.fillMaxSize()) {
+            val navController = rememberNavController()
+            val viewModel: AuctionViewModel = viewModel(factory = AuctionViewModelFactory(apiKey))
+
+            NavHost(navController, startDestination = "itemList") {
+                composable("itemList") {
+                    AuctionItemList(viewModel, navController)
+                }
+                composable("itemDetail/{itemId}") { backStackEntry ->
+                    val itemId = backStackEntry.arguments?.getString("itemId")
+                    val item = viewModel.items.find { it.id == itemId }
+                    if (item != null) {
+                        AuctionItemDetail(viewModel, item)
+                    }
+                }
             }
         }
     }
 }
 
-expect fun getPlatformName(): String
+@Preview(showBackground = true)
+@Composable
+fun PreviewApp() {
+    App(apiKey = "RAQUEL_API_KEY")
+}

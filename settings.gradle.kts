@@ -1,4 +1,4 @@
-rootProject.name = "MyApplication"
+rootProject.name = "KotlinMultiplatform"
 
 include(":androidApp")
 include(":shared")

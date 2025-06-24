@@ -1,0 +1,145 @@
+openapi: 3.0.0
+info:
+  title: Klaravik dev test API
+  description: Categories and products
+  version: 1.0.0
+servers:
+  - url: https://app.klaravik.dev/dev-test-api
+    description: Klaravik dev app server
+security:
+  - ApiKeyAuth: []
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        The API key to authorize requests.
+  responses:
+    UnauthorizedError:
+      description: Invalid or missing API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFoundError:
+      description: Resource or file not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServerError:
+      description: Internal server error reading data file
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        headline:
+          type: string
+        level:
+          type: integer
+        parentId:
+          type: integer
+      required: [id, headline, level]
+    CategoryList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Category'
+    MainImage:
+      type: object
+      properties:
+        imageUrlThumb:
+          type: string
+          format: uri
+        imageUrlLarge:
+          type: string
+          format: uri
+      required: [imageUrlThumb, imageUrlLarge]
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        make:
+          type: string
+        description:
+          type: string
+        currentBid:
+          type: integer
+        endDate:
+          type: string
+          format: date-time
+        reservePriceStatus:
+          type: string
+        municipalityName:
+          type: string
+        mainImage:
+          $ref: '#/components/schemas/MainImage'
+        categoryLevel1:
+          type: integer
+        categoryLevel2:
+          type: integer
+        categoryLevel3:
+          type: integer
+      required:
+        - id
+        - name
+        - currentBid
+        - endDate
+        - reservePriceStatus
+        - municipalityName
+    ProductList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Product'
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+paths:
+  /categories:
+    get:
+      summary: Retrieve categories
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: A JSON array of categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryList'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /products:
+    get:
+      summary: Retrieve products
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: A JSON array of products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductList'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
